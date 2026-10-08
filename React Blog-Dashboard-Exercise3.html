@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React Blog Dashboard - MC Learning House</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f6fa;color:#1f2937}button,input,select{font-family:inherit}
+.dashboard-header{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:35px 7%;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.dashboard-header h1{margin:0 0 8px;font-size:32px}.dashboard-header p{margin:0;opacity:.9}
+.header-badge{background:rgba(255,255,255,.15);padding:12px 18px;border-radius:25px;font-weight:bold}
+.container{width:86%;max-width:1200px;margin:30px auto}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:25px}
+.stat-card{background:#fff;border-radius:14px;padding:22px;display:flex;align-items:center;gap:18px;box-shadow:0 4px 15px rgba(0,0,0,.07)}
+.stat-icon{font-size:32px}.stat-card p{margin:0 0 5px;color:#6b7280}.stat-card h2{margin:0;font-size:25px}
+.search-panel{background:#fff;padding:22px;border-radius:14px;margin-bottom:30px;display:grid;grid-template-columns:2fr 1fr;gap:20px;box-shadow:0 4px 15px rgba(0,0,0,.07)}
+.search-box,.category-box{display:flex;flex-direction:column;gap:8px}.search-panel label{font-weight:bold;color:#374151}
+.search-panel input,.search-panel select{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:8px;font-size:15px;outline:none}
+.search-panel input:focus,.search-panel select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.search-row{display:flex;gap:10px}.search-btn{border:none;border-radius:8px;padding:0 20px;background:#2563eb;color:#fff;font-weight:bold;cursor:pointer;white-space:nowrap}.search-btn:hover{background:#1d4ed8}
+.clickable-title{cursor:pointer;transition:color .2s}.clickable-title:hover{color:#2563eb;text-decoration:underline}
+.read-more{margin-top:16px;border:none;background:#eff6ff;color:#1d4ed8;padding:9px 13px;border-radius:7px;cursor:pointer;font-weight:bold}.read-more:hover{background:#dbeafe}
+.article-modal,.intro-modal,.subscribe-modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.65);padding:25px;overflow-y:auto;align-items:flex-start;justify-content:center}
+.article-modal-content,.intro-modal-content,.subscribe-modal-content{max-width:760px;width:100%;margin:5vh auto;background:#fff;border-radius:16px;padding:30px;position:relative;box-shadow:0 15px 50px rgba(0,0,0,.25);animation:modalPop .22s ease-out}
+@keyframes modalPop{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.close-modal{position:absolute;top:14px;right:16px;width:38px;height:38px;border:none;border-radius:50%;background:#f1f5f9;font-size:23px;cursor:pointer;line-height:1}.close-modal:hover{background:#e2e8f0}
+.article-modal-content h2,.intro-modal-content h2{margin:18px 0 10px;font-size:30px;line-height:1.2}.article-body{color:#475569;line-height:1.8;font-size:16px}
+.section-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.section-heading h2{margin:0}.section-heading span{background:#e5edff;color:#1d4ed8;padding:7px 13px;border-radius:20px;font-size:14px}
+.blog-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}.blog-card{background:#fff;padding:24px;border-radius:14px;box-shadow:0 4px 15px rgba(0,0,0,.07);transition:transform .2s,box-shadow .2s;cursor:pointer}.blog-card:hover{transform:translateY(-4px);box-shadow:0 8px 22px rgba(0,0,0,.1)}
+.card-hint{margin:10px 0 0;color:#2563eb;font-size:13px;font-weight:600}.blog-card-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.category-tag{background:#dbeafe;color:#1d4ed8;padding:6px 11px;border-radius:20px;font-size:13px;font-weight:bold}.featured-tag{color:#b45309;background:#fef3c7;padding:6px 11px;border-radius:20px;font-size:13px}
+.blog-card h3{margin:18px 0 10px;font-size:21px}.author{color:#4b5563}.reading-time{color:#6b7280;font-size:14px}
+.card-actions{display:flex;gap:10px;margin-top:20px}.card-actions button{border:none;padding:9px 14px;border-radius:7px;cursor:pointer;font-weight:bold}
+.favorite-btn{background:#fef3c7;color:#92400e}.delete-btn{background:#fee2e2;color:#b91c1c}.card-actions button:hover{opacity:.8}
+.message{background:#fff;padding:25px;text-align:center;border-radius:12px;margin-top:20px}.loading-message{color:#1d4ed8}.empty-state{color:#6b7280}
+footer{margin-top:50px;padding:25px;text-align:center;background:#111827;color:#d1d5db}.made-by{margin:12px 0 0;font-size:15px;color:#fff}.made-by-link{border:0;background:transparent;color:#fff;padding:0;font-size:15px;cursor:pointer;text-decoration:none}.made-by-link:hover{text-decoration:underline;color:#bfdbfe}.made-by-link strong{text-decoration:underline;text-underline-offset:3px}
+.intro-top-badges{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px}.intro-badge{display:inline-block;background:#dbeafe;color:#1d4ed8;padding:7px 13px;border-radius:20px;font-size:13px;font-weight:bold}
+.intro-sub{color:#64748b;margin-top:8px;font-size:14px}.intro-divider{height:1px;background:#e2e8f0;margin:18px 0}.intro-section-title{font-size:18px;font-weight:800;color:#1e293b;margin:20px 0 10px}
+.creator-skills{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.creator-skill{background:#f1f5f9;color:#334155;padding:7px 11px;border-radius:20px;font-size:13px;border:1px solid #e2e8f0;font-weight:600}
+.contact-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;background:#f8fafc;border:1px solid #e2e8f0;padding:10px 14px;border-radius:10px}.contact-line a{color:#1d4ed8;font-weight:bold;text-decoration:none;word-break:break-all}.contact-line a:hover{text-decoration:underline}
+.yt-btn{display:inline-block;background:#FF0000;color:#fff;padding:11px 22px;border-radius:6px;font-weight:bold;font-size:15px;text-decoration:none;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(255,0,0,.25);transition:transform .15s,box-shadow .15s}.yt-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,0,0,.35);background:#e60000;color:#fff;text-decoration:none}
+.qa-box{margin-top:22px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px}.qa-box label{font-weight:bold;display:block;margin-bottom:8px;color:#1e293b}.qa-box textarea{width:100%;min-height:90px;padding:12px;border-radius:8px;border:1px solid #cbd5e1;font-size:14px;resize:vertical;outline:none}.qa-box textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.qa-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}.qa-btn{border:none;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;font-size:14px}.qa-btn-human{background:#dbeafe;color:#1e40af}.qa-btn-ai{background:#fef3c7;color:#92400e}.qa-btn-send{background:#2563eb;color:#fff}
+.qa-answer{margin-top:14px;padding:14px;background:#fff;border-radius:8px;border:1px solid #e2e8f0;font-size:14px;line-height:1.7;display:none;white-space:pre-line}.qa-answer.show{display:block}.qa-tag{font-size:12px;padding:3px 8px;border-radius:20px;font-weight:bold;margin-right:6px}.qa-tag-human{background:#dbeafe;color:#1d4ed8}.qa-tag-ai{background:#fef3c7;color:#b45309}
+.qa-history{margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;display:none;max-height:380px;overflow-y:auto}
+.qa-history.show{display:block}
+.qa-history h4{margin:0 0 10px;font-size:15px;color:#1e293b}
+.qa-history-item{border:1px solid #e5e7eb;border-radius:8px;padding:10px;margin-bottom:10px;background:#f9fafb}
+.qa-history-q{font-weight:bold;font-size:14px;color:#111827;margin-bottom:6px}
+.qa-history-a{font-size:13px;color:#475569;line-height:1.5;margin-bottom:4px}
+.qa-history-meta{font-size:11px;color:#94a3b8;display:flex;justify-content:space-between;gap:10px}
+.qa-history-actions{display:flex;gap:8px;margin-top:10px}
+.qa-history-btn{border:none;padding:6px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:bold}
+.qa-clear-btn{background:#fee2e2;color:#b91c1c}
+.qa-export-btn{background:#eff6ff;color:#1d4ed8}
+.about-me-qs{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.about-me-qs button{border:1px solid #e2e8f0;background:#f1f5f9;padding:6px 10px;border-radius:20px;font-size:12px;cursor:pointer;font-weight:600;color:#334155}
+.about-me-qs button:hover{background:#e2e8f0}
+.city-badge{display:inline-flex;align-items:center;gap:6px;background:#ecfdf5;color:#065f46;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:bold;border:1px solid #a7f3d0}
+
+/* Subscription */
+.subscribe-section{background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,.07);margin-bottom:30px;display:grid;grid-template-columns:1.2fr .8fr;gap:20px;align-items:center}
+.subscribe-section h3{margin:0 0 8px;font-size:22px}.subscribe-section p{margin:0 0 12px;color:#6b7280;line-height:1.5}
+.subscribe-form{display:flex;gap:10px;flex-wrap:wrap}.subscribe-form input{flex:1;min-width:200px;padding:12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none}.subscribe-form input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.sub-btn{background:#111827;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer}.sub-btn:hover{background:#000}
+.sub-count{background:#fef3c7;color:#92400e;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:bold;display:inline-block;margin-top:8px}
+.sub-list{max-height:180px;overflow-y:auto;margin-top:12px;border:1px solid #e5e7eb;border-radius:8px;padding:8px;background:#f9fafb}
+.sub-item{font-size:13px;padding:6px 8px;border-bottom:1px solid #eee;display:flex;justify-content:space-between}
+@media(max-width:900px){.subscribe-section{grid-template-columns:1fr}}
+@media(max-width:800px){.dashboard-header{flex-direction:column;align-items:flex-start}.stats-grid,.search-panel,.blog-grid{grid-template-columns:1fr}}
+@media(max-width:500px){.search-row{flex-direction:column}.search-btn{padding:12px 20px}.container{width:92%}.dashboard-header{padding:28px 4%}.dashboard-header h1{font-size:25px}.blog-card{padding:18px}.blog-card-top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="dashboard-header">
+<div><h1>React Blog Dashboard</h1><p>Manage and explore your technology blogs • MC Learning House</p></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap"><div class="header-badge">React + Redux</div><button class="header-badge" style="border:none;cursor:pointer" onclick="openSubscribeModal()">🔔 <span id="subBadge">0 Subscribers</span></button></div>
+</header>
+
+<main class="container">
+<div class="stats-grid">
+<div class="stat-card"><span class="stat-icon">📝</span><div><p>Total Blogs</p><h2 id="totalBlogs">4</h2></div></div>
+<div class="stat-card"><span class="stat-icon">⭐</span><div><p>Featured</p><h2 id="featuredBlogs">2</h2></div></div>
+<div class="stat-card"><span class="stat-icon">⏱</span><div><p>Total Reading</p><h2 id="readingTime">26 min</h2></div></div>
+</div>
+
+<div class="search-panel">
+<div class="search-box"><label for="searchInput">Search Blogs</label><div class="search-row"><input id="searchInput" type="text" placeholder="Search by title or author..."><button id="searchButton" class="search-btn" type="button">Search</button></div></div>
+<div class="category-box"><label for="categorySelect">Category</label><select id="categorySelect"><option value="All">All Categories</option><option value="React">React</option><option value="Redux">Redux</option><option value="Node">Node</option></select></div>
+</div>
+
+<div id="loading" class="message loading-message">Loading blogs...</div>
+<section id="blogSection" style="display:none;"><div class="section-heading"><h2>Blog Articles</h2><span id="resultCount">4 results</span></div><div id="blogGrid" class="blog-grid"></div></section>
+
+<!-- SUBSCRIPTION AT BOTTOM AFTER BLOG ARTICLES -->
+<div class="subscribe-section" style="margin-top:35px">
+<div>
+<h3>📩 Join Our Viewers Community — Chichawatni, Pakistan</h3>
+<p>Get new React blogs, tutorials from MC Learning House, and updates from Muniba CH (Chichawatni) directly in your email. Join <span id="mainSubCount">0</span> viewers!</p>
+<div class="subscribe-form">
+<input id="subName" type="text" placeholder="Your Name">
+<input id="subEmail" type="email" placeholder="Your Email Address">
+<button class="sub-btn" onclick="subscribeUser('main')">Subscribe</button>
+</div>
+<div id="mainSubMessage" style="margin-top:10px;font-size:13px;color:#059669;display:none"></div>
+</div>
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px">
+<strong style="font-size:14px">Why Subscribe?</strong>
+<ul style="margin:8px 0 0 18px;color:#475569;font-size:14px;line-height:1.6">
+<li>New blog alerts from Chichawatni</li>
+<li>MC Learning House YouTube updates</li>
+<li>Free web dev tips from Muniba CH</li>
+<li>Subscriber-only Q&A about me</li>
+</ul>
+<span class="sub-count" id="liveSubCount">🔥 0 active subscribers</span>
+</div>
+</div>
+
+</main>
+
+<div id="articleModal" class="article-modal" onclick="closeModalFromBackground(event)"><div class="article-modal-content"><button class="close-modal" type="button" onclick="closeArticle()">×</button><div id="articleContent"></div></div></div>
+
+<!-- Introduction Modal -->
+<div id="introModal" class="intro-modal" onclick="closeIntroductionOnBackground(event)">
+<div class="intro-modal-content">
+<button class="close-modal" type="button" onclick="closeIntroduction()">×</button>
+<div class="intro-top-badges"><span class="intro-badge">About the Creator</span><span class="featured-tag">★ Portfolio</span></div>
+<h2>Introduction — Muniba CH</h2>
+<p class="author">By <strong>Muniba CH</strong> · BS Business Administration</p>
+<p class="intro-sub">📍 Chichawatni, Pakistan • Virtual University of Pakistan — MC Learning House</p>
+<div class="intro-divider"></div>
+<p class="article-body"><strong>Overview:</strong> My name is <strong>Muniba CH</strong> from <strong>Chichawatni, Pakistan</strong>. I have completed my <strong>BS in Business Administration</strong> from Virtual University of Pakistan. I am based in Chichawatni, Punjab, Pakistan and I am interested in web development, graphic designing, business, and digital technologies.</p>
+<h3 class="intro-section-title">Contact Me</h3>
+<div class="contact-line"><span>📧</span><strong>Email:</strong><a href="mailto:Munibach2152@gmail.com">Munibach2152@gmail.com</a><button class="qa-btn qa-btn-human" style="margin-left:auto;padding:6px 10px;font-size:12px" onclick="copyEmail(event)">Copy</button></div>
+<div class="contact-line"><span>💬</span><strong>WhatsApp:</strong><a href="https://wa.me/923082355792?text=Hello%20Muniba%20CH" target="_blank">03082355792</a><a href="https://wa.me/923082355792" target="_blank" class="qa-btn qa-btn-ai" style="margin-left:auto;padding:6px 12px;font-size:12px;text-decoration:none">Chat</a></div>
+<div style="margin:16px 0"><p class="article-body" style="margin-bottom:8px"><strong>My YouTube Channel:</strong> MC Learning House</p><a href="https://www.youtube.com/channel/UCqr9x0Dr0KtAP05rdhaFKtA" target="_blank" class="yt-btn">Visit My YouTube Channel</a></div>
+<div class="intro-divider"></div>
+<h3 class="intro-section-title">Skills & Interests</h3>
+<p class="article-body">HTML/CSS, web development, graphic designing, Microsoft Office, Python Programming, Canva Designing, AutoCAD Architecture, content writing, typing, and AI-based picture editing.</p>
+<div class="creator-skills"><span class="creator-skill">HTML/CSS</span><span class="creator-skill">Web Development</span><span class="creator-skill">Graphic Designing</span><span class="creator-skill">Python</span><span class="creator-skill">Canva</span><span class="creator-skill">AutoCAD</span><span class="creator-skill">Content Writing</span><span class="creator-skill">AI Picture Editing</span><span class="creator-skill">Microsoft Office</span></div>
+<div class="intro-divider"></div>
+
+<div class="intro-divider"></div>
+<h3 class="intro-section-title">📍 About Me — Chichawatni, Pakistan</h3>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0">
+<span class="city-badge">📍 Chichawatni, Punjab, Pakistan</span>
+<span class="city-badge" style="background:#fef3c7;color:#92400e;border-color:#fde68a">🎓 Virtual University</span>
+<span class="city-badge" style="background:#dbeafe;color:#1e40af;border-color:#bfdbfe">💼 BS Business Admin</span>
+</div>
+<p class="article-body">I live in <strong>Chichawatni, Sahiwal District, Punjab, Pakistan</strong> — a city known for its forests and agriculture. I create educational content for <strong>MC Learning House</strong> from here, teaching web development and graphic design.</p>
+
+<!-- Quick Questions About Me -->
+<div class="qa-box" style="background:#fffbeb;border-color:#fde68a">
+<label>🙋 Quick Questions About Me (Click to Ask)</label>
+<div class="about-me-qs">
+<button onclick="askAboutMe('Where are you from?')">Where are you from?</button>
+<button onclick="askAboutMe('What is your city?')">What is your city?</button>
+<button onclick="askAboutMe('What is your education?')">Education?</button>
+<button onclick="askAboutMe('What are your skills?')">Your skills?</button>
+<button onclick="askAboutMe('What is your YouTube channel?')">YouTube?</button>
+<button onclick="askAboutMe('How to contact you?')">Contact?</button>
+<button onclick="askAboutMe('What services do you offer?')">Services?</button>
+<button onclick="askAboutMe('Tell me about Chichawatni')">About Chichawatni?</button>
+</div>
+</div>
+
+<!-- IMPROVED AI Q&A THAT KNOWS THE WEBSITE + ABOUT ME -->
+<div class="qa-box">
+<label for="userQuestion">🤖💬 Ask Anything — Human & AI Answers (Website + About Me)</label>
+<textarea id="userQuestion" placeholder="Ask about this website, blogs, Chichawatni, Muniba's city, education, skills, YouTube, etc..."></textarea>
+<div class="qa-actions"><button class="qa-btn qa-btn-send" onclick="sendQuestion()">Ask Both</button><button class="qa-btn qa-btn-human" onclick="showHumanAnswer()">Human Answer</button><button class="qa-btn qa-btn-ai" onclick="showAIAnswer()">AI Answer (Website + About Me)</button></div>
+<div id="qaHuman" class="qa-answer"><span class="qa-tag qa-tag-human">Human — Muniba CH — Chichawatni</span><div style="margin-top:8px">Thanks for your question! I am from Chichawatni, Pakistan. I will reply personally at Munibach2152@gmail.com or WhatsApp 03082355792.</div><div style="margin-top:8px;color:#64748b;font-size:13px" id="humanQuestionPreview"></div></div>
+<div id="qaAI" class="qa-answer"><span class="qa-tag qa-tag-ai">AI Assistant — Website + About Muniba</span><div style="margin-top:8px" id="aiAnswerText">Hi! I know everything about this React Blog Dashboard and about Muniba CH from Chichawatni, Pakistan. Ask me anything!</div><div style="margin-top:8px;color:#64748b;font-size:13px" id="aiQuestionPreview"></div></div>
+
+<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+<button class="qa-btn" style="background:#f1f5f9;color:#334155;border:1px solid #e2e8f0" onclick="toggleSavedQA()">📚 Saved Past Questions (<span id="savedQACount">0</span>)</button>
+<button class="qa-btn qa-btn-human" style="font-size:12px" onclick="clearSavedQA()">Clear History</button>
+</div>
+
+<div id="qaHistory" class="qa-history">
+<h4>📚 Saved Questions — Human & AI Answers (About Me + Website)</h4>
+<div id="qaHistoryList"></div>
+<div class="qa-history-actions">
+<button class="qa-history-btn qa-export-btn" onclick="exportQA()">Export as Text</button>
+<button class="qa-history-btn qa-clear-btn" onclick="clearSavedQA()">Clear All</button>
+</div>
+</div>
+
+</div>
+
+<!-- Mini Subscribe inside Intro -->
+<div style="margin-top:18px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px">
+<strong>🔔 Subscribe from here too</strong>
+<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input id="subEmailIntro" type="email" placeholder="Your email" style="flex:1;min-width:180px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"><button class="sub-btn" onclick="subscribeUser('intro')">Subscribe</button></div>
+<div id="introSubMessage" style="margin-top:8px;font-size:13px;color:#059669;display:none"></div>
+</div>
+
+<button class="read-more" style="margin-top:20px" onclick="closeIntroduction()">Close Introduction →</button>
+</div>
+</div>
+
+<!-- Subscribe List Modal -->
+<div id="subscribeModal" class="subscribe-modal" onclick="if(event.target.id==='subscribeModal')closeSubscribeModal()">
+<div class="subscribe-modal-content">
+<button class="close-modal" onclick="closeSubscribeModal()">×</button>
+<h2>🔔 Our Subscribers (<span id="modalSubCount">0</span>)</h2>
+<p class="article-body">Viewer community for MC Learning House & React Blog Dashboard.</p>
+<div class="subscribe-form" style="margin:12px 0"><input id="subNameModal" type="text" placeholder="Your Name"><input id="subEmailModal" type="email" placeholder="Your Email"><button class="sub-btn" onclick="subscribeUser('modal')">Join</button></div>
+<div id="modalSubMessage" style="font-size:13px;color:#059669;display:none;margin-bottom:10px"></div>
+<div id="subList" class="sub-list"></div>
+<button class="read-more" style="margin-top:14px" onclick="closeSubscribeModal()">Close</button>
+</div>
+</div>
+
+<footer><p>React Blog Dashboard | MC Learning House — Muniba CH</p><p class="made-by"><button class="made-by-link" onclick="openIntroduction()">Made by <strong>Muniba CH</strong></button> • <a href="https://www.youtube.com/channel/UCqr9x0Dr0KtAP05rdhaFKtA" target="_blank" style="color:#bfdbfe">YouTube</a> • <span id="footerSubs">0 viewers subscribed</span></p></footer>
+
+<script>
+const searchInput=document.getElementById("searchInput"),categorySelect=document.getElementById("categorySelect"),blogGrid=document.getElementById("blogGrid"),loading=document.getElementById("loading"),blogSection=document.getElementById("blogSection");
+let blogs=[{id:1,title:"Understanding React Hooks",category:"React",author:"Ali Khan",readingTime:6,featured:true},{id:2,title:"Redux Toolkit Complete Guide",category:"Redux",author:"Sara Ahmed",readingTime:8,featured:false},{id:3,title:"Building a Blog with React",category:"React",author:"Hamza M",readingTime:5,featured:true},{id:4,title:"Node.js and Express Basics",category:"Node",author:"Ayesha Noor",readingTime:7,featured:false}];
+const articleDetails={1:{intro:"React Hooks allow functional components to use state, effects, references and performance optimizations without class components.",sections:[["What are React Hooks?","Hooks are special React functions such as useState, useEffect, useRef, useMemo and useCallback. They make component logic easier to organize and reuse."],["Why are Hooks useful?","Hooks help manage state, respond to changes, access DOM elements, reuse logic and optimize components."],["Hooks in this dashboard","This project demonstrates useRef for focusing the search box, useMemo inside filtering, useCallback for blog actions, and React.memo for BlogCard."],["Website Feature","You can search blogs by title/author, filter by category, favorite/unfavorite, delete, and read full article in a modal like this."]]},2:{intro:"Redux Toolkit simplifies Redux setup by reducing boilerplate.",sections:[["configureStore()","Creates Redux store with good defaults, combining reducers and middleware."],["createSlice()","Defines reducers and actions together."],["Website Connection","In this HTML demo, Redux is simulated with local state. In real React app, blogs would be in Redux store."]] },3:{intro:"A React blog dashboard combines component design, state management and interactivity.",sections:[["BlogCard Component","Each blog shown inside reusable BlogCard with title, category, author and reading time."],["Using map()","Blog list generated via JavaScript map() method."],["Website Search","The search panel at top lets you filter by keyword and category, result count updates instantly."]]},4:{intro:"Node.js provides JavaScript runtime for server-side, Express is lightweight web framework.",sections:[["Node.js","Allows JavaScript outside browser for backend and APIs."],["Express","Provides routing, middleware for web servers."],["React Connection","React frontend can communicate with Express backend to load, create, update and delete blog data. This dashboard simulates that with local array."]]}};
+
+function openBlogArticle(id){openArticle(id)}function openArticle(id){const blog=blogs.find(b=>b.id===id);const details=articleDetails[id];if(!blog||!details)return;const sections=details.sections.map(s=>`<h3>${s[0]}</h3><p class="article-body">${s[1]}</p>`).join("");document.getElementById("articleContent").innerHTML=`<span class="category-tag">${blog.category}</span> ${blog.featured?'<span class="featured-tag">★ Featured</span>':''}<h2>${blog.title}</h2><p class="author">By <strong>${blog.author}</strong> · ${blog.readingTime} min reading</p><p class="article-body"><strong>Overview:</strong> ${details.intro}</p>${sections}<div style="margin-top:18px"><a href="https://www.youtube.com/channel/UCqr9x0Dr0KtAP05rdhaFKtA" target="_blank" class="yt-btn">Visit MC Learning House</a></div>`;document.getElementById("articleModal").style.display="flex";document.body.style.overflow="hidden"}
+function closeArticle(){document.getElementById("articleModal").style.display="none";document.body.style.overflow=""}function closeModalFromBackground(e){if(e.target.id==="articleModal")closeArticle()}
+function openIntroduction(){document.getElementById("introModal").style.display="flex";document.body.style.overflow="hidden"}function closeIntroduction(){document.getElementById("introModal").style.display="none";document.body.style.overflow=""}function closeIntroductionOnBackground(e){if(e.target.id==="introModal")closeIntroduction()}
+function openSubscribeModal(){renderSubscribers();document.getElementById("subscribeModal").style.display="flex";document.body.style.overflow="hidden"}function closeSubscribeModal(){document.getElementById("subscribeModal").style.display="none";document.body.style.overflow=""}
+
+function renderBlogs(){const search=searchInput.value.toLowerCase().trim();const category=categorySelect.value;const filtered=blogs.filter(b=>{const ms=b.title.toLowerCase().includes(search)||b.author.toLowerCase().includes(search);const mc=category==="All"||b.category===category;return ms&&mc});document.getElementById("resultCount").textContent=`${filtered.length} result${filtered.length===1?"":"s"}`;if(filtered.length===0){blogGrid.innerHTML=`<div class="message empty-state" style="grid-column:1/-1"><h3>No blogs found</h3><p>Try different search or category.</p></div>`;return}blogGrid.innerHTML=filtered.map(blog=>`<article class="blog-card" onclick="openBlogArticle(${blog.id})"><div class="blog-card-top"><span class="category-tag">${blog.category}</span>${blog.featured?'<span class="featured-tag">★ Featured</span>':''}</div><h3 class="clickable-title">${blog.title}</h3><p class="author">By <strong>${blog.author}</strong></p><p class="reading-time">⏱ ${blog.readingTime} min reading</p><p class="card-hint">Click to read full article in modal.</p><button class="read-more" type="button">Read Full Article →</button><div class="card-actions"><button class="favorite-btn" onclick="event.stopPropagation();toggleFeatured(${blog.id})">${blog.featured?"★ Unfavorite":"☆ Favorite"}</button><button class="delete-btn" onclick="event.stopPropagation();deleteBlog(${blog.id})">Delete</button></div></article>`).join("");updateStats()}
+function updateStats(){document.getElementById("totalBlogs").textContent=blogs.length;document.getElementById("featuredBlogs").textContent=blogs.filter(b=>b.featured).length;document.getElementById("readingTime").textContent=blogs.reduce((t,b)=>t+b.readingTime,0)+" min"}
+function toggleFeatured(id){blogs=blogs.map(b=>b.id===id?{...b,featured:!b.featured}:b);renderBlogs()}function deleteBlog(id){blogs=blogs.filter(b=>b.id!==id);renderBlogs()}
+
+// --- Subscription System (localStorage) ---
+function getSubs(){try{return JSON.parse(localStorage.getItem("mc_subscribers")||"[]")}catch{return[]}}function saveSubs(arr){localStorage.setItem("mc_subscribers",JSON.stringify(arr));updateSubCounts()}
+function updateSubCounts(){const subs=getSubs();document.getElementById("subBadge").textContent=subs.length+" Subscribers";document.getElementById("mainSubCount").textContent=subs.length;document.getElementById("liveSubCount").textContent=`🔥 ${subs.length} active subscribers`;document.getElementById("modalSubCount").textContent=subs.length;document.getElementById("footerSubs").textContent=subs.length+" viewers subscribed"}
+function renderSubscribers(){const subs=getSubs();const list=document.getElementById("subList");if(subs.length===0){list.innerHTML='<div style="padding:8px;color:#6b7280;font-size:13px">No subscribers yet. Be the first!</div>';return}list.innerHTML=subs.map((s,i)=>`<div class="sub-item"><span><strong>${s.name||"Viewer"}</strong> — ${s.email}</span><span style="color:#6b7280">${s.date}</span></div>`).join("")}
+function subscribeUser(source){let name="",email="";if(source==="main"){name=document.getElementById("subName").value.trim();email=document.getElementById("subEmail").value.trim()}else if(source==="intro"){name="Viewer";email=document.getElementById("subEmailIntro").value.trim()}else{name=document.getElementById("subNameModal").value.trim();email=document.getElementById("subEmailModal").value.trim()}if(!email||!email.includes("@")){alert("Please enter a valid email.");return}const subs=getSubs();if(subs.some(s=>s.email.toLowerCase()===email.toLowerCase())){alert("You are already subscribed! Thank you ❤️");return}subs.push({name:name||"Viewer",email:email,date:new Date().toLocaleDateString()});saveSubs(subs);renderSubscribers();const msgEl=document.getElementById(source==="main"?"mainSubMessage":source==="intro"?"introSubMessage":"modalSubMessage");msgEl.textContent=`✅ Thank you ${name||""}! Subscribed successfully. You will get updates from MC Learning House!`;msgEl.style.display="block";if(source==="main"){document.getElementById("subName").value="";document.getElementById("subEmail").value=""}else if(source==="intro"){document.getElementById("subEmailIntro").value=""}else{document.getElementById("subNameModal").value="";document.getElementById("subEmailModal").value=""}setTimeout(()=>msgEl.style.display="none",4000)}
+
+// --- Copy Email ---
+function copyEmail(e){e.stopPropagation();navigator.clipboard.writeText("Munibach2152@gmail.com").then(()=>alert("Email copied: Munibach2152@gmail.com"))}
+
+// --- WEBSITE + ABOUT ME AI (Chichawatni) ---
+function getWebsiteContext(){
+const total=blogs.length,featured=blogs.filter(b=>b.featured).length,reading=blogs.reduce((t,b)=>t+b.readingTime,0);
+return {
+info:`This is React Blog Dashboard by Muniba CH from Chichawatni, Pakistan (MC Learning House). It has ${total} blogs, ${featured} featured, ${reading} min total reading. Creator: Muniba CH, BS Business Administration, Virtual University of Pakistan, lives in Chichawatni, Sahiwal District, Punjab, Pakistan. Features: search by title/author, category filter (React, Redux, Node), favorite/unfavorite toggle, delete blog, article modal popup, intro modal with city badge, contact (Email Munibach2152@gmail.com, WhatsApp 03082355792, YouTube MC Learning House https://www.youtube.com/channel/UCqr9x0Dr0KtAP05rdhaFKtA), subscription system at bottom after blog articles, stats cards, Q&A about me and website, saved past questions history.`,
+blogs:blogs.map(b=>`${b.title} by ${b.author} (${b.category}, ${b.readingTime} min, ${b.featured?"Featured":""})`).join("; "),
+aboutMe:`Muniba CH is from Chichawatni, Punjab, Pakistan. City: Chichawatni (Sahiwal District, famous for forests). Education: BS Business Administration from Virtual University of Pakistan. Skills: HTML/CSS, Web Dev, Graphic Design, MS Office, Python, Canva, AutoCAD Architecture, Content Writing, Typing, AI Picture Editing. Interests: web development, business, digital tech. YouTube: MC Learning House. Email: Munibach2152@gmail.com, WhatsApp: 03082355792. Goal: Build creative digital experiences combining business knowledge with modern web tech.`
+}
+}
+function generateAIAnswer(question){
+const q=question.toLowerCase();const ctx=getWebsiteContext();
+if((q.includes("where") && (q.includes("from") || q.includes("live") || q.includes("city"))) || q.includes("chichawatni") || q.includes("which city") || q.includes("your city") || q.includes("location")) return `I (Muniba CH) am from Chichawatni, Punjab, Pakistan — Sahiwal District, known for its forests and agriculture. I live and work from Chichawatni, creating content for MC Learning House and this React Blog Dashboard. 📍 Chichawatni, Pakistan`;
+if(q.includes("about chichawatni") || q.includes("chichawatni city")) return `Chichawatni is a city in Sahiwal District, Punjab, Pakistan. It's known for Chichawatni Forest, one of the oldest forests. I (Muniba CH) live here and run MC Learning House from Chichawatni. This website is managed from Chichawatni, Pakistan.`;
+if(q.includes("how many") && q.includes("blog")) return `This website currently has ${blogs.length} blog articles. Total reading time is ${blogs.reduce((t,b)=>t+b.readingTime,0)} minutes. Featured: ${blogs.filter(b=>b.featured).length}. All managed by Muniba CH from Chichawatni, Pakistan.`;
+if(q.includes("what is this website") || q.includes("about this website") || q.includes("what does this website") || q.includes("purpose") || q.includes("purpose of this website")) return `Purpose of this website: React Blog Dashboard is an interactive HTML demo built for React & Redux Toolkit practice, created by Muniba CH from Chichawatni, Pakistan (MC Learning House). Purpose: To showcase blogs (React, Redux, Node), demonstrate search, category filter, favorite toggle, delete, article modals, intro modal with city Chichawatni, contact integration, subscription at bottom, and Q&A system that answers both about website and about me.`;
+if(q.includes("how to search") || q.includes("search work") || q.includes("filter")) return `Search works: Type in "Search Blogs" box (by title/author) and select category. Click Search or auto-filters on typing. Result count updates. Example: "React" shows ${blogs.filter(b=>b.category==="React").length} blogs. This feature helps viewers from Chichawatni and worldwide find content.`;
+if(q.includes("subscribe") || q.includes("subscription") || q.includes("join") || q.includes("viewer")){const subs=getSubs();return `Subscription at bottom after Blog Articles: Viewers enter name & email, saved in localStorage. Currently ${subs.length} viewers subscribed from different cities including Chichawatni. Features: validation, duplicate check, live count, subscriber list modal. Join to get updates from Muniba CH, Chichawatni.`}
+if(q.includes("featured")) return `Featured blogs: ${blogs.filter(b=>b.featured).map(b=>b.title).join(", ")} — ★ Featured tag. Toggle favorite button. Featured count in stats. Curated by Muniba CH, Chichawatni.`;
+if(q.includes("react hooks") || q.includes("usestate") || q.includes("useeffect")){const d=articleDetails[1];return `About React Hooks (Blog 1): ${d.intro} Sections: ${d.sections.map(s=>s[0]+": "+s[1]).join(" ")} — Explained on this website made in Chichawatni.`}
+if(q.includes("redux")){const d=articleDetails[2];return `Redux Toolkit Guide (Blog 2): ${d.intro} ${d.sections.map(s=>s[0]+": "+s[1]).join(" ")}`}
+if(q.includes("node") || q.includes("express")){const d=articleDetails[4];return `Node.js & Express Basics (Blog 4): ${d.intro} ${d.sections.map(s=>s[0]+": "+s[1]).join(" ")}`}
+if(q.includes("email") || q.includes("contact") || q.includes("whatsapp")) return `Contact Muniba CH from Chichawatni, Pakistan: Email Munibach2152@gmail.com, WhatsApp 03082355792 (https://wa.me/923082355792), YouTube MC Learning House https://www.youtube.com/channel/UCqr9x0Dr0KtAP05rdhaFKtA — red button "Visit My YouTube Channel" in intro modal. Location: Chichawatni, Pakistan.`;
+if(q.includes("youtube") || q.includes("channel") || q.includes("mc learning")) return `MC Learning House YouTube: https://www.youtube.com/channel/UCqr9x0Dr0KtAP05rdhaFKtA — Red button "Visit My YouTube Channel" in intro modal. Creator: Muniba CH from Chichawatni, Pakistan, BS Business Admin, Virtual University.`;
+if(q.includes("education") || q.includes("study") || q.includes("degree") || q.includes("university")) return `Education: BS in Business Administration from Virtual University of Pakistan. I (Muniba CH) studied business but passionate about web development, graphic design, digital tech. Based in Chichawatni, Pakistan.`;
+if(q.includes("skill") || q.includes("what can you do") || q.includes("services") || q.includes("offer")) return `Muniba CH from Chichawatni: Skills — HTML/CSS, Web Development, Graphic Designing, Microsoft Office, Python Programming, Canva Designing, AutoCAD Architecture, Content Writing, Typing, AI-based Picture Editing. Services: Web design, graphics, Canva, content writing, Python help, AutoCAD. Contact: Munibach2152@gmail.com, 03082355792. City: Chichawatni, Pakistan.`;
+if(q.includes("who is muniba") || q.includes("about muniba") || q.includes("tell me about you") || q.includes("who are you") || q.includes("about me") || q.includes("muniba ch")) return `${ctx.aboutMe}`;
+if(q.includes("who made") || q.includes("made by") || q.includes("creator")) return `Made by Muniba CH from Chichawatni, Pakistan — BS Business Admin, Virtual University. Introduction modal opens when clicking "Made by Muniba CH" in footer. Contains city badge Chichawatni, bio, skills, contacts, YouTube red button, about-me quick questions, Q&A with saved history, and mini subscribe.`;
+if(q.includes("how") && q.includes("modal")) return `Modals: 3 modals — Article modal (click blog card), Intro modal (click Made by Muniba CH, shows Chichawatni city), Subscribe modal (click subscribers badge). All close by ×, outside click, Escape. Body overflow hidden when open.`;
+return `Website Info: ${ctx.info} Blogs: ${ctx.blogs} About Me: ${ctx.aboutMe} Your question: "${question}". Try: "Where are you from?", "What is your city?", "About Chichawatni?", "What is purpose of website?", "Your education?", "Your skills?", "How to subscribe?"`;
+}
+function askAboutMe(q){document.getElementById("userQuestion").value=q;sendQuestion();}
+// --- Saved Past Questions History ---
+function getQAHistory(){try{return JSON.parse(localStorage.getItem("mc_qa_history")||"[]")}catch{return[]}}
+function saveQAHistory(arr){localStorage.setItem("mc_qa_history",JSON.stringify(arr));updateQACount()}
+function updateQACount(){const h=getQAHistory();const el=document.getElementById("savedQACount");if(el)el.textContent=h.length}
+function addToHistory(question, humanAns, aiAns){
+ const hist=getQAHistory();
+ hist.unshift({id:Date.now(),question:question,human:humanAns,ai:aiAns,date:new Date().toLocaleString(),city:"Chichawatni, Pakistan"});
+ if(hist.length>50) hist.pop();
+ saveQAHistory(hist);
+ renderQAHistory();
+}
+function renderQAHistory(){
+ const hist=getQAHistory();
+ const list=document.getElementById("qaHistoryList");
+ updateQACount();
+ if(!list) return;
+ if(hist.length===0){list.innerHTML='<div style="color:#6b7280;font-size:13px;padding:8px">No saved questions yet. Ask about Muniba, Chichawatni, or website and it will save here with Human + AI answers.</div>';return}
+ list.innerHTML=hist.map(item=>`
+ <div class="qa-history-item">
+   <div class="qa-history-q">❓ ${escapeHtml(item.question)}</div>
+   <div class="qa-history-a"><span class="qa-tag qa-tag-human">Human — Chichawatni</span> ${escapeHtml(item.human)}</div>
+   <div class="qa-history-a"><span class="qa-tag qa-tag-ai">AI — About Me + Website</span> ${escapeHtml(item.ai)}</div>
+   <div class="qa-history-meta"><span>${item.date} • ${item.city||"Chichawatni"}</span><button class="qa-history-btn" style="background:#fee2e2;color:#b91c1c" onclick="deleteQAItem(${item.id})">Delete</button></div>
+ </div>
+ `).join("");
+}
+function escapeHtml(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function toggleSavedQA(){const box=document.getElementById("qaHistory");box.classList.toggle("show");renderQAHistory();}
+function clearSavedQA(){if(!confirm("Clear all saved questions?"))return;localStorage.removeItem("mc_qa_history");renderQAHistory();updateQACount()}
+function deleteQAItem(id){let hist=getQAHistory();hist=hist.filter(h=>h.id!==id);saveQAHistory(hist);renderQAHistory()}
+function exportQA(){
+ const hist=getQAHistory();
+ if(hist.length===0){alert("No questions to export.");return}
+ let txt="MC Learning House - Chichawatni, Pakistan - Saved Q&A History\n\n";
+ hist.forEach((h,i)=>{txt+=`${i+1}. Q: ${h.question}\n   Human (Chichawatni): ${h.human}\n   AI: ${h.ai}\n   Date: ${h.date}\n\n`;});
+ const blob=new Blob([txt],{type:"text/plain"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");a.href=url;a.download="mc-qa-history-chichawatni.txt";a.click();
+ URL.revokeObjectURL(url);
+}
+
+function getQuestion(){return document.getElementById("userQuestion").value.trim()}
+function sendQuestion(){
+ const q=getQuestion();if(!q){alert("Please type a question first.");return}
+ const humanText=`Assalam-o-Alaikum! I am Muniba CH from Chichawatni, Pakistan. Thanks for asking: "${q}". I will reply personally at Munibach2152@gmail.com or WhatsApp 03082355792. I am based in Chichawatni, Punjab.`;
+ const aiText=generateAIAnswer(q);
+ document.getElementById("humanQuestionPreview").textContent='Your question: "'+q+'"';
+ document.getElementById("aiQuestionPreview").textContent='Your question: "'+q+'"';
+ document.getElementById("qaHuman").querySelector("div").textContent=humanText;
+ document.getElementById("aiAnswerText").textContent=aiText;
+ document.getElementById("qaHuman").classList.add("show");
+ document.getElementById("qaAI").classList.add("show");
+ addToHistory(q, humanText, aiText);
+}
+function showHumanAnswer(){
+ const q=getQuestion();
+ const humanText = q ? `I am Muniba CH from Chichawatni, Pakistan. Thanks for asking: "${q}". I will reply personally at Munibach2152@gmail.com or WhatsApp 03082355792.` : "I am Muniba CH from Chichawatni, Pakistan. Thanks! I will reply personally at Munibach2152@gmail.com or WhatsApp 03082355792.";
+ if(q) document.getElementById("humanQuestionPreview").textContent='Your question: "'+q+'"';
+ document.getElementById("qaHuman").querySelector("div").textContent=humanText;
+ document.getElementById("qaHuman").classList.add("show");
+ if(q){
+   const aiText=generateAIAnswer(q);
+   addToHistory(q, humanText, aiText);
+ }
+}
+function showAIAnswer(){
+ const q=getQuestion()||"What is the purpose of this website?";
+ const aiText=generateAIAnswer(q);
+ document.getElementById("aiQuestionPreview").textContent='Your question: "'+q+'"';
+ document.getElementById("aiAnswerText").textContent=aiText;
+ document.getElementById("qaAI").classList.add("show");
+ const humanText=`I am Muniba CH from Chichawatni, Pakistan. Thanks for asking: "${q}". I will reply personally at Munibach2152@gmail.com.`;
+ addToHistory(q, humanText, aiText);
+}
+
+document.getElementById("searchButton").addEventListener("click",renderBlogs);searchInput.addEventListener("input",renderBlogs);searchInput.addEventListener("keydown",e=>{if(e.key==="Enter")renderBlogs()});categorySelect.addEventListener("change",renderBlogs);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeArticle();closeIntroduction();closeSubscribeModal()}});
+setTimeout(()=>{loading.style.display="none";blogSection.style.display="block";searchInput.focus();renderBlogs();updateSubCounts();renderSubscribers();if(typeof renderQAHistory==="function"){renderQAHistory();updateQACount();}},900);
+</script>
+</body>
+</html>
